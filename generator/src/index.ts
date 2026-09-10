@@ -1,10 +1,19 @@
-import type { ProjectDefinition } from "@backend-file-generator/shared";
+import fs from "fs";
+import path from "path";
 
-const project:ProjectDefinition = {
-    name: "Tushar",
-    version: "v0",
-    entities: [],
-    relationships: [],
-}
+import {
+  validateProject,
+  type ProjectDefinition
+} from "@backend-file-generator/shared";
 
-console.log(project)
+const projectPath = path.resolve(
+  __dirname,"../../examples/ecommerce.json"
+)
+
+const projectFile = fs.readFileSync(projectPath, "utf-8")
+
+const project: ProjectDefinition = JSON.parse(projectFile)
+
+const result = validateProject(project);
+
+console.log(JSON.stringify(result, null, 2));

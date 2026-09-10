@@ -19,12 +19,14 @@
   },
   "homepage": "https://github.com/tusharXO/backen-file-generator#readme",
   "dependencies": {
-    "@types/node": "^22.20.2",
     "typescript": "^7.0.2"
   },
   "workspaces": [
     "frontend",
     "generator",
     "shared"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^22.20.2"
+  }
 }
