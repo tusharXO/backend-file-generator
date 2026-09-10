@@ -1,0 +1,50 @@
+import { EntityDefinition } from "@backend-file-generator/shared";
+
+export function generatePrismaModel(entity: EntityDefinition): string {
+  const fields = entity.fields.map((field) => {
+    let prismaType: string;
+
+    switch (field.type) {
+      case "string":
+        prismaType = "String";
+        break;
+
+      case "integer":
+        prismaType = "Int";
+        break;
+
+      case "number":
+        prismaType = "Float";
+        break;
+
+      case "boolean":
+        prismaType = "Boolean";
+        break;
+
+      case "date":
+        prismaType = "DateTime";
+        break;
+
+      case "datetime":
+        prismaType = "DateTime";
+        break;
+
+      default:
+        throw new Error(`Unsupported field type: ${field.type}`);
+    }
+
+    let attributes: string[] = [];
+
+    if (entity.primaryKey === field.name) {
+      attributes.push("@id");
+    }
+
+    if (field.unique && field.name !== entity.primaryKey) {
+      attributes.push("@unique");
+    }
+
+    return `  ${field.name} ${prismaType}${field.nullable ? "?" : ""} ${attributes.join(" ")}`.trimEnd();
+  });
+
+  return [`model ${entity.name}{`, ...fields, `}`].join("\n");
+}

@@ -1,0 +1,12 @@
+model User{
+  id Int @id
+  name String
+  email String @unique
+  createdAt DateTime
+}
+
+model Product{
+  id Int @id
+  name String
+  price Float
+}
