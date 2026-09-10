@@ -1,8 +1,10 @@
-import type { ProjectDefination } from "@backend-file-generator/shared";
+import type { ProjectDefinition } from "@backend-file-generator/shared";
 
-const project:ProjectDefination = {
+const project:ProjectDefinition = {
     name: "Tushar",
-    version: "v0"
+    version: "v0",
+    entities: [],
+    relationships: [],
 }
 
 console.log(project)
