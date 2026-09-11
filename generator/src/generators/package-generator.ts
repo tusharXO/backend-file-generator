@@ -1,0 +1,29 @@
+export function generatePackageJson(projectName: string): string {
+  const packageJson = {
+name: projectName.toLowerCase().replace(/\s+/g, "-"),
+    version: "1.0.0",
+    private: true,
+    type: "module",
+    scripts: {
+      dev: "tsx watch src/server.ts",
+      build: "tsc",
+      start: "node dist/server.js"
+    },
+    dependencies: {
+      "@prisma/adapter-pg": "^7.10.0",
+      "@prisma/client": "^7.10.0",
+      "dotenv": "^17.0.0",
+      "express": "^5.0.0",
+      "pg": "^8.0.0"
+    },
+    devDependencies: {
+      "@types/express": "^5.0.0",
+      "@types/node": "^22.0.0",
+      "prisma": "^7.10.0",
+      "tsx": "^4.0.0",
+      "typescript": "^5.0.0"
+    }
+  };
+
+  return JSON.stringify(packageJson, null, 2)
+}

@@ -1,0 +1,5 @@
+export function generateEnv(): string{
+    return `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ecommerce"
+PORT=3000
+`;
+}

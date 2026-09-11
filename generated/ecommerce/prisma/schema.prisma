@@ -1,8 +1,17 @@
+generator client { 
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
 model User{
   id Int @id
   name String
   email String @unique
-  createdAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Product{
