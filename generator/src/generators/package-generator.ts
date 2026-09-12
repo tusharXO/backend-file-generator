@@ -14,7 +14,8 @@ name: projectName.toLowerCase().replace(/\s+/g, "-"),
       "@prisma/client": "^7.10.0",
       "dotenv": "^17.0.0",
       "express": "^5.0.0",
-      "pg": "^8.0.0"
+      "pg": "^8.0.0",
+      "zod": "^4.0.0"
     },
     devDependencies: {
       "@types/express": "^5.0.0",

@@ -8,6 +8,7 @@ export function createProjectStructure(outputDirectory: string): void {
     "src/routes",
     "src/services",
     "src/middleware",
+    "src/validation",
   ];
 
   for(const directory of directories){ 

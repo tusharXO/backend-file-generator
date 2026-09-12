@@ -68,7 +68,7 @@ export function generateRoute(
     if (api.method === "POST" && api.operation === "create") {
       imports.push(`create${entityName}`);
 
-      routes.push(`router.post("${api.path}", async (req, res) => {
+      routes.push(`router.post("${api.path}", validate${entityName}Create, async (req, res) => {
   try {
     const ${entityVariable} = await create${entityName}(req.body);
 
@@ -88,7 +88,7 @@ export function generateRoute(
     if (api.method === "PUT" && api.operation === "update") {
       imports.push(`update${entityName}`);
 
-      routes.push(`router.put("${api.path}", async (req, res) => {
+      routes.push(`router.put("${api.path}", validate${entityName}Update, async (req, res) => {
   try {
     const id = Number(req.params.id);
 
@@ -136,8 +136,14 @@ export function generateRoute(
 
   const uniqueImports = [...new Set(imports)];
 
+  const validationImport = `import {
+  validate${entityName}Create,
+  validate${entityName}Update
+} from "../middleware/${entityVariable}.validation.js";`;
+
   return `import { Router } from "express";
 import { ${uniqueImports.join(", ")} } from "../services/${entityVariable}.service.js";
+${validationImport}
 
 const router = Router();
 

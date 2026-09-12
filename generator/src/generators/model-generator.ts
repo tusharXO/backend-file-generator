@@ -35,8 +35,12 @@ export function generatePrismaModel(entity: EntityDefinition): string {
 
     let attributes: string[] = [];
 
-    if (entity.primaryKey === field.name) {
+    if (field.name === entity.primaryKey) {
       attributes.push("@id");
+
+      if (field.type === "integer") {
+        attributes.push("@default(autoincrement())");
+      }
     }
 
     if (field.unique && field.name !== entity.primaryKey) {

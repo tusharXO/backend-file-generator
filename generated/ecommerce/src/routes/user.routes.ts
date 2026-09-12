@@ -1,11 +1,9 @@
 import { Router } from "express";
+import { listUsers, createUser, getUser, updateUser, deleteUser } from "../services/user.service.js";
 import {
-  listUsers,
-  createUser,
-  getUser,
-  updateUser,
-  deleteUser,
-} from "../services/user.service.js";
+  validateUserCreate,
+  validateUserUpdate
+} from "../middleware/user.validation.js";
 
 const router = Router();
 
@@ -18,12 +16,12 @@ router.get("/users", async (_req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Internal server error",
+      error: "Internal server error"
     });
   }
 });
 
-router.post("/users", async (req, res) => {
+router.post("/users", validateUserCreate, async (req, res) => {
   try {
     const user = await createUser(req.body);
 
@@ -32,7 +30,7 @@ router.post("/users", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Internal server error",
+      error: "Internal server error"
     });
   }
 });
@@ -45,7 +43,7 @@ router.get("/users/:id", async (req, res) => {
 
     if (!user) {
       res.status(404).json({
-        error: "User not found",
+        error: "User not found"
       });
 
       return;
@@ -56,12 +54,12 @@ router.get("/users/:id", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Internal server error",
+      error: "Internal server error"
     });
   }
 });
 
-router.put("/users/:id", async (req, res) => {
+router.put("/users/:id", validateUserUpdate, async (req, res) => {
   try {
     const id = Number(req.params.id);
 
@@ -72,7 +70,7 @@ router.put("/users/:id", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Internal server error",
+      error: "Internal server error"
     });
   }
 });
@@ -88,7 +86,7 @@ router.delete("/users/:id", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Internal server error",
+      error: "Internal server error"
     });
   }
 });

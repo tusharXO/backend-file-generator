@@ -242,19 +242,17 @@ export type ProductScalarWhereWithAggregatesInput = {
 }
 
 export type ProductCreateInput = {
-  id: number
   name: string
   price: number
 }
 
 export type ProductUncheckedCreateInput = {
-  id: number
+  id?: number
   name: string
   price: number
 }
 
 export type ProductUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
 }
@@ -266,13 +264,12 @@ export type ProductUncheckedUpdateInput = {
 }
 
 export type ProductCreateManyInput = {
-  id: number
+  id?: number
   name: string
   price: number
 }
 
 export type ProductUpdateManyMutationInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
 }

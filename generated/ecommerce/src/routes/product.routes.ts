@@ -1,5 +1,9 @@
 import { Router } from "express";
 import { listProducts, createProduct } from "../services/product.service.js";
+import {
+  validateProductCreate,
+  validateProductUpdate
+} from "../middleware/product.validation.js";
 
 const router = Router();
 
@@ -17,7 +21,7 @@ router.get("/products", async (_req, res) => {
   }
 });
 
-router.post("/products", async (req, res) => {
+router.post("/products", validateProductCreate, async (req, res) => {
   try {
     const product = await createProduct(req.body);
 
