@@ -1,5 +1,5 @@
-import { ApiDefinition } from "@backend-file-generator/shared";
-import { toPluralName, toVariableName } from "../utils/name-utils";
+import type { ApiDefinition } from "@backend-file-generator/shared";
+import { toVariableName } from "../utils/name-utils";
 
 export function generateRoute(
   entityName: string,
@@ -31,6 +31,37 @@ export function generateRoute(
     });
   }
 });`);
+
+      continue;
+    }
+
+    if (api.method === "GET" && api.operation === "get") {
+      imports.push(`get${entityName}`);
+
+      routes.push(`router.get("${api.path}", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const ${entityVariable} = await get${entityName}(id);
+
+    if (!${entityVariable}) {
+      res.status(404).json({
+        error: "${entityName} not found"
+      });
+
+      return;
+    }
+
+    res.json(${entityVariable});
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+});`);
+
       continue;
     }
 
@@ -54,8 +85,52 @@ export function generateRoute(
       continue;
     }
 
+    if (api.method === "PUT" && api.operation === "update") {
+      imports.push(`update${entityName}`);
+
+      routes.push(`router.put("${api.path}", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const ${entityVariable} = await update${entityName}(id, req.body);
+
+    res.json(${entityVariable});
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+});`);
+
+      continue;
+    }
+
+    if (api.method === "DELETE" && api.operation === "delete") {
+      imports.push(`delete${entityName}`);
+
+      routes.push(`router.delete("${api.path}", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    await delete${entityName}(id);
+
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+});`);
+
+      continue;
+    }
+
     throw new Error(
-      `Unsupported API operation: ${api.method} ${api.operation}`,
+      `Unsupported API operation: \${api.method} \${api.operation}`,
     );
   }
 

@@ -88,6 +88,27 @@
       "operation": "create"
     },
     {
+      "name": "Get User",
+      "method": "GET",
+      "path": "/users/:id",
+      "entity": "User",
+      "operation": "get"
+    },
+    {
+      "name": "Update User",
+      "method": "PUT",
+      "path": "/users/:id",
+      "entity": "User",
+      "operation": "update"
+    },
+    {
+      "name": "Delete User",
+      "method": "DELETE",
+      "path": "/users/:id",
+      "entity": "User",
+      "operation": "delete"
+    },
+    {
       "name": "List Products",
       "method": "GET",
       "path": "/products",
