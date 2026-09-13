@@ -1,11 +1,23 @@
-import type { ApiDefinition } from "@backend-file-generator/shared";
+import type {
+  ApiDefinition,
+  EntityDefinition,
+} from "@backend-file-generator/shared";
 import { toVariableName } from "../utils/name-utils";
 
 export function generateRoute(
-  entityName: string,
+  entity: EntityDefinition,
   apis: ApiDefinition[],
 ): string {
+  const entityName = entity.name;
   const entityVariable = toVariableName(entityName);
+  const primaryKey = entity.primaryKey;
+  const primaryKeyParam = `:${primaryKey}`;
+
+  if (!primaryKey) {
+    throw new Error(
+      `Primary key field "${primaryKey}" not found for entity "${entityName}"`,
+    );
+  }
 
   const imports: string[] = [];
   const routes: string[] = [];
@@ -40,7 +52,7 @@ export function generateRoute(
 
       routes.push(`router.get("${api.path}", async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.${primaryKey});
 
     const ${entityVariable} = await get${entityName}(id);
 
@@ -90,7 +102,7 @@ export function generateRoute(
 
       routes.push(`router.put("${api.path}", validate${entityName}Update, async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.${primaryKey});
 
     const ${entityVariable} = await update${entityName}(id, req.body);
 
@@ -112,7 +124,7 @@ export function generateRoute(
 
       routes.push(`router.delete("${api.path}", async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const id = Number(req.params.${primaryKey});
 
     await delete${entityName}(id);
 

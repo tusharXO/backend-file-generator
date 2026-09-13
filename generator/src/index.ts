@@ -132,5 +132,5 @@ for (const entity of project.entities) {
 
   writeGeneratedFile(validationPath, generateValidationSchema(entity));
 
-  writeGeneratedFile(routePath, generateRoute(entity.name, entityApis));
+  writeGeneratedFile(routePath, generateRoute(entity, entityApis));
 }

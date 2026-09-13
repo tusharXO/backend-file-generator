@@ -12,15 +12,36 @@ export function validateProject(project: ProjectDefinition): ValidationResult {
 
   for (const entity of project.entities) {
     if (entityNames.has(entity.name)) {
-      errors.push(`Duplicate entity name: ${entity}`);
+      errors.push(`Duplicate entity name: ${entity.name}`);
     } else {
       entityNames.add(entity.name);
     }
   }
 
   for (const api of project.apis) {
-    if (api.entity && !entityNames.has(api.entity)) {
+    if (!api.entity) {
+      continue;
+    }
+
+    const entity = project.entities.find(
+      (entity) => entity.name === api.entity,
+    );
+
+    if (!entity) {
       errors.push(`API "${api.name}" references unknown entity: ${api.entity}`);
+
+      continue;
+    }
+
+    if (
+      (api.operation === "get" ||
+        api.operation === "update" ||
+        api.operation === "delete") &&
+      !api.path.includes(`:${entity.primaryKey}`)
+    ) {
+      errors.push(
+        `API "${api.name}" must include :${entity.primaryKey} in its path`,
+      );
     }
   }
 
