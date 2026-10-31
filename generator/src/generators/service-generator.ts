@@ -1,48 +1,34 @@
-import { EntityDefinition } from "@backend-file-generator/shared";
+import type { EntityDefinition } from "@backend-file-generator/shared";
 import { toPluralName, toVariableName } from "../utils/name-utils";
 
 export function generateService(entity: EntityDefinition): string {
-  const variableName = toVariableName(entity.name);
-  const pluralName = toPluralName(entity.name);
-
+  const variable = toVariableName(entity.name);
+  const plural = toPluralName(entity.name);
   return `import { prisma } from "../lib/prisma.js";
+import type {
+  ${entity.name}Id,
+  ${entity.name}CreateInput,
+  ${entity.name}UpdateInput
+} from "../validation/${variable}.schema.js";
 
-export async function list${pluralName}() {
-  return prisma.${variableName}.findMany();
+export async function list${plural}() {
+  return prisma.${variable}.findMany();
 }
 
-export async function get${entity.name}(id : number){
-  return prisma.${variableName}.findUnique({
-    where: {
-      ${entity.primaryKey}: id
-    }
-  });
+export async function get${entity.name}(id: ${entity.name}Id) {
+  return prisma.${variable}.findUnique({ where: { ${entity.primaryKey}: id } });
 }
 
-export async function create${entity.name}(data: any) {
-  return prisma.${variableName}.create({
-    data
-  });
+export async function create${entity.name}(data: ${entity.name}CreateInput) {
+  return prisma.${variable}.create({ data });
 }
 
-export async function update${entity.name}(
-  id: number,
-  data: any
-) {
-  return prisma.${variableName}.update({
-    where: {
-      ${entity.primaryKey}: id
-    },
-    data
-  });
+export async function update${entity.name}(id: ${entity.name}Id, data: ${entity.name}UpdateInput) {
+  return prisma.${variable}.update({ where: { ${entity.primaryKey}: id }, data });
 }
 
-export async function delete${entity.name}(id: number) {
-  return prisma.${variableName}.delete({
-    where: {
-      ${entity.primaryKey}: id
-    }
-  });
-} 
+export async function delete${entity.name}(id: ${entity.name}Id) {
+  return prisma.${variable}.delete({ where: { ${entity.primaryKey}: id } });
+}
 `;
 }

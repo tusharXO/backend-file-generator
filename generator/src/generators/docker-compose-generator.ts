@@ -1,17 +1,40 @@
-export function generateDockerCompose(): string{
-    return `services:
+export function generateDockerCompose(): string {
+  return `services:
   postgres:
     image: postgres:17-alpine
-    container_name: ecommerce-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ecommerce
     ports:
-      - "5432:5432"
+      - "127.0.0.1:\${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d ecommerce"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ecommerce
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:\${PORT:-3000}:3000"
+    command: ["sh", "-c", "npm run db:deploy && exec node dist/server.js"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 12
 
 volumes:
   postgres_data:

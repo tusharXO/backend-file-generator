@@ -1,5 +1,9 @@
 # Backend File Generator
 
+> This document describes the intended V0 product. Current implementation progress
+> and verification results are tracked in [docs/next-phase.md](docs/next-phase.md)
+> and [README.md](README.md); the original checklist below is not a live status report.
+
 > A visual backend design tool that converts a structured backend definition into a runnable Node.js + Express + PostgreSQL + Docker backend project.
 
 **Project Status:** Prototype / V0  

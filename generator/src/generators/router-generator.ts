@@ -1,161 +1,68 @@
-import type {
-  ApiDefinition,
-  EntityDefinition,
-} from "@backend-file-generator/shared";
-import { toVariableName } from "../utils/name-utils";
+import type { ApiDefinition, EntityDefinition } from "@backend-file-generator/shared";
+import { toPluralName, toVariableName } from "../utils/name-utils";
 
-export function generateRoute(
-  entity: EntityDefinition,
-  apis: ApiDefinition[],
-): string {
-  const entityName = entity.name;
-  const entityVariable = toVariableName(entityName);
-  const primaryKey = entity.primaryKey;
-  const primaryKeyParam = `:${primaryKey}`;
-
-  if (!primaryKey) {
-    throw new Error(
-      `Primary key field "${primaryKey}" not found for entity "${entityName}"`,
-    );
+export function generateRoute(entity: EntityDefinition, apis: ApiDefinition[]): string {
+  const name = entity.name;
+  const variable = toVariableName(name);
+  const services = new Set<string>();
+  const middleware = new Set<string>();
+  let needsId = false;
+  const routes = apis.filter(api => api.entity === name).map(api => {
+    const path = JSON.stringify(api.path);
+    const hasId = ["get", "update", "delete"].includes(api.operation ?? "");
+    let validation = "";
+    if (hasId) {
+      needsId = true;
+      validation = `  const id = ${name}IdSchema.safeParse(req.params[${JSON.stringify(entity.primaryKey)}]);
+  if (!id.success) {
+    res.status(400).json({ error: "Invalid ID", details: id.error.issues });
+    return;
   }
 
-  const imports: string[] = [];
-  const routes: string[] = [];
-
-  for (const api of apis) {
-    if (api.entity !== entityName) {
-      continue;
+`;
     }
-
+    let handler: string;
+    let beforeHandler = "";
     if (api.method === "GET" && api.operation === "list") {
-      imports.push(`list${entityName}s`);
-
-      routes.push(`router.get("${api.path}", async (_req, res) => {
-  try {
-    const ${entityVariable}s = await list${entityName}s();
-
-    res.json(${entityVariable}s);
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Internal server error"
-    });
+      services.add(`list${toPluralName(name)}`);
+      handler = `  res.json(await list${toPluralName(name)}());`;
+    } else if (api.method === "GET" && api.operation === "get") {
+      services.add(`get${name}`);
+      handler = `  const record = await get${name}(id.data);
+  if (!record) {
+    res.status(404).json({ error: ${JSON.stringify(`${name} not found`)} });
+    return;
   }
-});`);
-
-      continue;
+  res.json(record);`;
+    } else if (api.method === "POST" && api.operation === "create") {
+      services.add(`create${name}`);
+      middleware.add(`validate${name}Create`);
+      beforeHandler = `validate${name}Create, `;
+      handler = `  res.status(201).json(await create${name}(req.body));`;
+    } else if (api.method === "PUT" && api.operation === "update") {
+      services.add(`update${name}`);
+      middleware.add(`validate${name}Update`);
+      beforeHandler = `validate${name}Update, `;
+      handler = `  res.json(await update${name}(id.data, req.body));`;
+    } else if (api.method === "DELETE" && api.operation === "delete") {
+      services.add(`delete${name}`);
+      handler = `  await delete${name}(id.data);
+  res.status(204).send();`;
+    } else {
+      throw new Error(`Unsupported API operation: ${api.method} ${api.operation}`);
     }
-
-    if (api.method === "GET" && api.operation === "get") {
-      imports.push(`get${entityName}`);
-
-      routes.push(`router.get("${api.path}", async (req, res) => {
-  try {
-    const id = Number(req.params.${primaryKey});
-
-    const ${entityVariable} = await get${entityName}(id);
-
-    if (!${entityVariable}) {
-      res.status(404).json({
-        error: "${entityName} not found"
-      });
-
-      return;
-    }
-
-    res.json(${entityVariable});
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Internal server error"
-    });
-  }
-});`);
-
-      continue;
-    }
-
-    if (api.method === "POST" && api.operation === "create") {
-      imports.push(`create${entityName}`);
-
-      routes.push(`router.post("${api.path}", validate${entityName}Create, async (req, res) => {
-  try {
-    const ${entityVariable} = await create${entityName}(req.body);
-
-    res.status(201).json(${entityVariable});
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Internal server error"
-    });
-  }
-});`);
-
-      continue;
-    }
-
-    if (api.method === "PUT" && api.operation === "update") {
-      imports.push(`update${entityName}`);
-
-      routes.push(`router.put("${api.path}", validate${entityName}Update, async (req, res) => {
-  try {
-    const id = Number(req.params.${primaryKey});
-
-    const ${entityVariable} = await update${entityName}(id, req.body);
-
-    res.json(${entityVariable});
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Internal server error"
-    });
-  }
-});`);
-
-      continue;
-    }
-
-    if (api.method === "DELETE" && api.operation === "delete") {
-      imports.push(`delete${entityName}`);
-
-      routes.push(`router.delete("${api.path}", async (req, res) => {
-  try {
-    const id = Number(req.params.${primaryKey});
-
-    await delete${entityName}(id);
-
-    res.status(204).send();
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Internal server error"
-    });
-  }
-});`);
-
-      continue;
-    }
-
-    throw new Error(
-      `Unsupported API operation: \${api.method} \${api.operation}`,
-    );
-  }
-
-  const uniqueImports = [...new Set(imports)];
-
-  const validationImport = `import {
-  validate${entityName}Create,
-  validate${entityName}Update
-} from "../middleware/${entityVariable}.validation.js";`;
-
-  return `import { Router } from "express";
-import { ${uniqueImports.join(", ")} } from "../services/${entityVariable}.service.js";
-${validationImport}
+    // Express 5 forwards rejected async handlers to the central error middleware.
+    return `router.${api.method.toLowerCase()}(${path}, ${beforeHandler}async (req, res) => {
+${validation}${handler}
+});`;
+  });
+  const imports = [
+    'import { Router } from "express";',
+    `import { ${[...services].join(", ")} } from "../services/${variable}.service.js";`,
+  ];
+  if (middleware.size) imports.push(`import { ${[...middleware].join(", ")} } from "../middleware/${variable}.validation.js";`);
+  if (needsId) imports.push(`import { ${name}IdSchema } from "../validation/${variable}.schema.js";`);
+  return `${imports.join("\n")}
 
 const router = Router();
 

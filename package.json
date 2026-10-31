@@ -1,10 +1,16 @@
 {
   "name": "backend-file-generator",
   "version": "1.0.0",
-  "description": "",
+  "description": "Generate standalone Express and PostgreSQL backends from validated JSON definitions",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:core": "npm run build --workspace shared && npm run build --workspace generator",
+    "build": "npm run build:core && npm run build --workspace frontend",
+    "test": "npm run build:core && node --test tests/*.test.cjs",
+    "lint": "npm run lint --workspace frontend",
+    "check": "npm run build && node --test tests/*.test.cjs && npm run lint",
+    "generate": "npm run build:core && node generator/dist/index.js generate",
+    "verify:generated": "npm run build:core && node scripts/verify-generated.cjs"
   },
   "repository": {
     "type": "git",
@@ -18,8 +24,8 @@
     "url": "https://github.com/tusharXO/backen-file-generator/issues"
   },
   "homepage": "https://github.com/tusharXO/backen-file-generator#readme",
-  "dependencies": {
-    "typescript": "^7.0.2"
+  "engines": {
+    "node": ">=24.0.0"
   },
   "workspaces": [
     "frontend",
@@ -27,6 +33,9 @@
     "shared"
   ],
   "devDependencies": {
-    "@types/node": "^22.20.2"
+    "@types/node": "^22.20.2",
+    "express": "^5.2.1",
+    "typescript": "~6.0.2",
+    "zod": "^4.6.6"
   }
 }

@@ -7,14 +7,14 @@ datasource db {
   provider = "postgresql"
 }
 
-model User{
+model User {
   id Int @id @default(autoincrement())
   name String
   email String @unique
   createdAt DateTime @default(now())
 }
 
-model Product{
+model Product {
   id Int @id @default(autoincrement())
   name String
   price Float

@@ -1,30 +1,37 @@
-export function generatePackageJson(projectName: string): string {
+export function generatePackageJson(projectName: string, projectVersion = "0.1.0"): string {
   const packageJson = {
-name: projectName.toLowerCase().replace(/\s+/g, "-"),
-    version: "1.0.0",
+    name: projectName.toLowerCase().replace(/\s+/g, "-"),
+    version: projectVersion,
     private: true,
     type: "module",
+    engines: { node: ">=24.0.0" },
     scripts: {
       dev: "tsx watch src/server.ts",
-      build: "tsc",
-      start: "node dist/server.js"
+      build: "npm run db:generate && tsc",
+      start: "node dist/server.js",
+      "db:generate": "prisma generate",
+      "db:init": "node scripts/init-migration.mjs",
+      "db:deploy": "prisma migrate deploy",
+      "db:migrate": "prisma migrate dev",
+      setup: "npm run db:init && npm run db:deploy",
+      test: "node --test scripts/smoke-test.mjs",
     },
     dependencies: {
-      "@prisma/adapter-pg": "^7.10.0",
-      "@prisma/client": "^7.10.0",
+      "@prisma/adapter-pg": "7.10.1",
+      "@prisma/client": "7.10.1",
       "dotenv": "^17.0.0",
       "express": "^5.0.0",
       "pg": "^8.0.0",
-      "zod": "^4.0.0"
+      "zod": "^4.6.6"
     },
     devDependencies: {
       "@types/express": "^5.0.0",
       "@types/node": "^22.0.0",
-      "prisma": "^7.10.0",
+      "prisma": "7.10.1",
       "tsx": "^4.0.0",
       "typescript": "^5.0.0"
     }
   };
 
-  return JSON.stringify(packageJson, null, 2)
+  return JSON.stringify(packageJson, null, 2) + "\n";
 }
